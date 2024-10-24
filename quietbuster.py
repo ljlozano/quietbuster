@@ -13,7 +13,7 @@ Features:
 - Add possible browser extensions that might aid in privacy while browsing (research required).
 - Need to either fork seleniumwire, swap to Chromedriver + DevTools, or find a better maintained fork.
 	- Because seleniumwire is not being maintained anymore, must use blinker 1.7.0 (pip install blinker==1.7.0)
-	- Swap to Chromedriver + ChromeDevTools for now (it's native and won't require seleniumwire)
+	- Swap to Chromedriver + ChromeDevTools for now (it's native and won't require seleniumwire) [x]
 '''
 import utils
 import json
@@ -34,6 +34,7 @@ class QuietBuster:
 
 	def __init__(self, logger) -> None:
 		self.log = logger
+		self.ua_url = "https://gist.githubusercontent.com/pzb/b4b6f57144aea7827ae4/raw/cf847b76a142955b1410c8bcef3aabe221a63db1/user-agents.txt"
 		self.agents = list()
 		self.update_user_agents()
 		
@@ -41,9 +42,9 @@ class QuietBuster:
 		with open('./files/useragents.txt', 'r') as file:
 			lines = file.readlines()
 			if len(lines) <= 0:
-				self.agents = requests.get("https://gist.githubusercontent.com/pzb/b4b6f57144aea7827ae4/raw/cf847b76a142955b1410c8bcef3aabe221a63db1/user-agents.txt").text.split('\n')
+				self.agents = requests.get(self.ua_url).text.splitlines()
 			else:
-				self.agents = [line.strip() for line in lines]
+				self.agents = [line.strip() for line in lines if line.strip()] # Only non empty stripped
 
 	def build(self) -> None:
 		'''
