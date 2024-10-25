@@ -102,6 +102,11 @@ class QuietBuster:
 		'''
 		self.set_random_seed_uri()
 		self.drive.get(self.seed)
+		time.sleep(10)
+		print("XXXX")
+		frame_count = self.drive.execute_script("return document.getElementsByTagName('iframe').length")
+		print(frame_count)
+		print("XXXX")
 		self.google_nav_humanize()
 
 	def set_random_seed_uri(self) -> None:
@@ -125,7 +130,7 @@ class QuietBuster:
 
 	def xpath_nav(self) -> None:
 	    element = WebDriverWait(self.drive, random.uniform(7, 14)).until(
-	    	EC.presence_of_element_located((By.XPATH, "//textarea[@title='Search']"))
+	    	EC.visibility_of_element_located((By.XPATH, "//textarea[@title='Search']"))
 	    )
 	    print(element)
 	    return element  # This will return None if the element was not found
