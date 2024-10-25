@@ -10,6 +10,12 @@ Features:
 	- Load directories and subdomains from a file.
 	- Load proxies from a file or an external API, as well as test them for usability.
 - Implement human based movement, behavior, and interaction with webapps.
+	- Add random scroll.
+	- Add random mouse movement.
+	- Add window resize to common size.
+	- Add slight window resize.
+	- Add randomized time delay typing.
+	- Add CAPTCHA solving (almost certainly using an API... $)
 - Add possible browser extensions that might aid in privacy while browsing (research required).
 - Need to either fork seleniumwire, swap to Chromedriver + DevTools, or find a better maintained fork.
 	- Because seleniumwire is not being maintained anymore, must use blinker 1.7.0 (pip install blinker==1.7.0)
@@ -21,20 +27,30 @@ import random
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.proxy import Proxy
 from selenium.webdriver.common.proxy import ProxyType
-
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 LOG_DIR = "./files/log"
+
 LOG_FILE = "qb.log"
+
 TEST_URL = "https://google.com"
+UA_URL = "https://gist.githubusercontent.com/pzb/b4b6f57144aea7827ae4/raw/cf847b76a142955b1410c8bcef3aabe221a63db1/user-agents.txt"
+
+SEARCH_XPATH = "//textarea[contains(@title, 'Search')]"
+
 
 class QuietBuster:
 
 	def __init__(self, logger) -> None:
 		self.log = logger
-		self.ua_url = "https://gist.githubusercontent.com/pzb/b4b6f57144aea7827ae4/raw/cf847b76a142955b1410c8bcef3aabe221a63db1/user-agents.txt"
+		self.ua_url = UA_URL
+		self.home_urls = ["https://google.com"]
+		self.seed = random.choice(self.home_urls)
 		self.agents = list()
 		self.update_user_agents()
 		
@@ -74,12 +90,58 @@ class QuietBuster:
 		        url = message['params']['response']['url']
 		        self.log.debug(f"URL: {url}, Status Code: {status_code}")
 
+	def humanize_init(self) -> None:
+		'''
+		'Humanizes' the browser by going to a seed url (typically a search engine).
+		'''
+		self.go_to_home()
+
+	def go_to_home(self) -> None:
+		'''
+		Initial URL to navigate to during spawning of browser.
+		'''
+		self.set_random_seed_uri()
+		self.drive.get(self.seed)
+		self.google_nav_humanize()
+
+	def set_random_seed_uri(self) -> None:
+		self.seed = random.choice(self.home_urls)
+
+	def google_nav_humanize(self) -> None:
+		'''
+		Serves as a function to navigate from home to another page, via search bar or links on the page.
+		** HLB - indicates function utilizes human like behavior.
+		'''
+		search_xpath = self.xpath_nav()
+		if search_xpath is None:
+			self.log.debug("Search box not found. Exiting function.")
+			return  # Exit if the element is not found
+		amount = random.randint(2, 8)
+		for _ in range(amount):
+			search_xpath.send_keys(random.choice(self.agents)[random.randint(len(self.agents) - 1)])
+			time.sleep(random.uniform(3,10))
+		search_xpath.send_keys(Keys.ENTER)
+		time.sleep(random.uniform(10,15))
+
+	def xpath_nav(self) -> None:
+	    element = None  # Initialize element to None
+	    try:
+	        element = WebDriverWait(self.drive, random.uniform(7, 14)).until(
+	            EC.presence_of_element_located((By.XPATH, "//textarea[@title='Search']"))
+	        )
+	    except Exception as e:  # Optionally catch the exception and log it
+	        self.log.debug(f"Timed out waiting for the element to load: {e}")
+	    print(element)
+	    return element  # This will return None if the element was not found
+
+
 
 def driver():
 	utils.create_path(LOG_DIR)
 	logger = utils.build_logger(LOG_DIR, LOG_FILE)
 	qb = QuietBuster(logger)
 	qb.build()
+	qb.humanize_init()
 	qb.check_url(TEST_URL)
 
 
