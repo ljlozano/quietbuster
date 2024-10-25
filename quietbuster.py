@@ -124,13 +124,9 @@ class QuietBuster:
 		time.sleep(random.uniform(10,15))
 
 	def xpath_nav(self) -> None:
-	    element = None  # Initialize element to None
-	    try:
-	        element = WebDriverWait(self.drive, random.uniform(7, 14)).until(
-	            EC.presence_of_element_located((By.XPATH, "//textarea[@title='Search']"))
-	        )
-	    except Exception as e:  # Optionally catch the exception and log it
-	        self.log.debug(f"Timed out waiting for the element to load: {e}")
+	    element = WebDriverWait(self.drive, random.uniform(7, 14)).until(
+	    	EC.presence_of_element_located((By.XPATH, "//textarea[@title='Search']"))
+	    )
 	    print(element)
 	    return element  # This will return None if the element was not found
 
