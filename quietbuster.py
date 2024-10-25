@@ -103,11 +103,6 @@ class QuietBuster:
 		'''
 		self.set_random_seed_uri()
 		self.drive.get(self.seed)
-		time.sleep(10)
-		print("XXXX")
-		frame_count = self.drive.execute_script("return document.getElementsByTagName('iframe').length")
-		print(frame_count)
-		print("XXXX")
 		self.google_nav_humanize()
 
 	def set_random_seed_uri(self) -> None:
@@ -122,17 +117,17 @@ class QuietBuster:
 		if search_xpath is None:
 			self.log.debug("Search box not found. Exiting function.")
 			return  # Exit if the element is not found
+		if not self.agents:
+			return
 		amount = random.randint(2, 8)
 		for _ in range(amount):
-			search_xpath.send_keys(random.choice(self.agents)[random.randint(len(self.agents) - 1)])
+			search_xpath.send_keys(random.choice(self.agents)[random.randint(0, 6)])
 			time.sleep(random.uniform(3,10))
 		search_xpath.send_keys(Keys.ENTER)
 		time.sleep(random.uniform(10,15))
 
 	def xpath_nav(self) -> None:
-	    element = WebDriverWait(self.drive, random.uniform(7, 14)).until(
-	    	EC.visibility_of_element_located((By.XPATH, "//textarea[@title='Search']"))
-	    )
+	    element = WebDriverWait(self.drive, random.uniform(7, 14)).until(EC.visibility_of_element_located((By.XPATH, "//input[@name='q']")))
 	    print(element)
 	    return element  # This will return None if the element was not found
 
